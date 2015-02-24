@@ -12,5 +12,13 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "ragekit",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": {
+   "type": "git",
+   "url": "git://github.com/ragekit/diary.git"
+  },
+  "preferGlobal": "true",
+  "bin": {
+    "filesearch" : "lib/filesearch.js"
+  }
 }
