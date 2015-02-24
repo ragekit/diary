@@ -30,12 +30,12 @@ Diary.add = function(projectName,cb)
 				else{
 					console.log(projectName + " added");
 				}
-				cb.call(this);
+				Diary.close();
 			})
 		}else
 		{
 			console.error(projectName + " allready exist");
-			cb.call(this);
+			Diary.close();
 		}
 
 	})
@@ -47,7 +47,7 @@ Diary.start = function(projectName,cb)
 		if(found == null)
 		{
 			console.log("no project named" + projectName + " found");
-			cb.call(this);
+			Diary.close();
 		}else
 		{
 			Project.findOne().where('logs').elemMatch({end:null}).exec(function(err,started){
@@ -63,7 +63,7 @@ Diary.start = function(projectName,cb)
 					}else
 					{
 						console.log("project allready started");
-						cb();
+						Diary.close();
 					}
 				}else
 				{
@@ -79,7 +79,7 @@ Diary.list = function(cb){
 		for (var i = 0; i < found.length; i++) {
 			console.log(found[i].name);
 		};
-		cb();
+		Diary.close();
 	})
 }
 
@@ -88,7 +88,7 @@ startlog = function(project,cb){
 	project.logs.push(l);
 	console.log("starting project "  + project.name);
 	project.save(function(){
-		cb.call(this);
+		Diary.close();
 	});
 }
 
@@ -97,12 +97,12 @@ Diary.end = function(cb){
 		if(found == null)
 		{
 			console.log("no project have been started");
-			cb.call(this);
+			Diary.close();
 			return;
 		}
 		found.logs[found.logs.length-1].end = Date.now();
 		found.save(function(){
-			cb.call(this);
+			Diary.close();
 		});
 	})
 }
@@ -121,8 +121,15 @@ mongo.stdout.on('data', function (data) {
   	mongoose.connect('mongodb://localhost/test');
     var args = process.argv.slice(2);
 	arguments = args.slice(1);
-	arguments.push(Diary.close);
-	Diary[args[0]].apply(this,arguments);
+	if(diary[args[0]] != null)
+	{
+		Diary[args[0]].apply(this,arguments);
+	}
+	else
+	{
+		console.log(args[0] + " param doesn't exist");
+		Diary.close();
+	}
   }
 });
 
