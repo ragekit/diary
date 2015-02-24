@@ -19,6 +19,6 @@
   },
   "preferGlobal": "true",
   "bin": {
-    "filesearch" : "lib/filesearch.js"
+    "diary" : "diary.js"
   }
 }
