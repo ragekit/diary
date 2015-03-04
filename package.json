@@ -1,24 +1,22 @@
 {
   "name": "diary",
   "version": "1.0.0",
-  "description": "diary utilities for mongodb",
+  "description": "diary utilities",
   "main": "diary",
   "dependencies": {
-    "mongoose": "^3.8.23",
+    "moment": "^2.9.0",
     "yamljs": "^0.2.1"
   },
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "devDependencies": {
   },
   "author": "ragekit",
   "license": "ISC",
   "repository": {
-   "type": "git",
-   "url": "git://github.com/ragekit/diary.git"
+    "type": "git",
+    "url": "git://github.com/ragekit/diary.git"
   },
   "preferGlobal": "true",
   "bin": {
-    "diary" : "diary.js"
+    "diary": "diary.js"
   }
 }
