@@ -1,10 +1,6 @@
 Diary
 ======
 
-###To install
-Install mongodb then
-
-
 ```
 npm install git+https://git@github.com/ragekit/diary.git
 ```

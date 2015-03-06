@@ -1,6 +1,10 @@
-var Datastore = require('nedb')
-  , db = new Datastore({ filename: './db', autoload: true })
-  , moment = require('moment');
+#!/usr/bin/env node
+
+var fs = require('fs');
+var Datastore = require('nedb');
+var moment = require('moment');
+var path = require('path')
+
 
 var projectSchema = function(){
 	this.name = "";
@@ -45,7 +49,7 @@ Diary.start = function(projectName)
 			{
 				db.update({_id : found._id},{
 					$addToSet:{
-						logs:{start: new Date(),end:null}
+						logs:{start: moment(),end:null}
 					},
 					$set:{
 						_started:true
@@ -72,7 +76,7 @@ Diary.end = function(projectName)
 		} }, function (err, docs) {
 		  for (var i = 0; i < docs.length; i++) {
 		  	docs[i]._started = false;
-		  	docs[i].logs[docs[i].logs.length-1].end = new Date();
+		  	docs[i].logs[docs[i].logs.length-1].end = moment();
 
 		  	db.update({_id: docs[i]._id},docs[i]);
 		  };
@@ -91,7 +95,7 @@ Diary.end = function(projectName)
 		{
 			if(found._started)
 			{
-				found.logs[found.logs.length-1].end = new Date();
+				found.logs[found.logs.length-1].end = moment();
 				found._started = false;
 				db.update({_id : found._id},found);
 			}else
@@ -103,32 +107,87 @@ Diary.end = function(projectName)
 }
 
 Diary.list = function(){
+
+	var startTime = moment.max();
+	var totalworkingtime = 0;
 	db.find({},function(err,found){
 		for (var i = 0; i < found.length; i++) {
-			console.log();
-			console.log(found[i].name);
+			console.log("\n"+found[i].name);
 			console.log("  │");
+
+
 			var totaldiff = 0;
 			for (var j = 0; j < found[i].logs.length; j++) {
 				var s = moment(found[i].logs[j].start);
 				var e = moment(found[i].logs[j].end);
+
+				if(s.isBefore(startTime))
+				{
+					startTime = s;
+				}
+
 				var diff = e.diff(s);
 				totaldiff += diff;
 				console.log("  ├───" + s.format("D MMMM YYYY, H:mm:ss") + " // " +e.format("D MMMM YYYY, H:mm:ss") +" == " + moment.duration(diff).humanize());
 			};
+			totalworkingtime += totaldiff;
 			console.log("  ╚══  total time : " + moment.duration(totaldiff).humanize());
 
 		};
+
+		totalworkingtime = moment.duration(totalworkingtime);
+
+		console.log("\n TOTAL WORKING TIME : " + totalworkingtime.humanize());
+		console.log(" Since : "+  startTime.format("D MMMM YYYY, H:mm:ss"));
+
+		var dayWorked = moment.duration(moment().diff(startTime)).days();
+
+		console.log(" Average : " + moment.duration(totalworkingtime/dayWorked).humanize() + " by day (including non working days)");
 	})
 }
 
+Diary.setDatabase = function(p){
+	fs.writeFileSync(configPath, JSON.stringify({dbpath:path.resolve(p)}));
+}
+
+
+//process.exit();
+
+var configPath = path.resolve(path.dirname(process.argv[1]) + "/config.json");
+console.log(configPath);
 var args = process.argv.slice(2);
-	arguments = args.slice(1);
-	if(Diary[args[0]] != null)
-	{
-		Diary[args[0]].apply(this,arguments);
+
+var optionExist = fs.existsSync(configPath);
+
+if(args[0] == "database")
+{
+	Diary.setDatabase(args[1]);
+	process.exit();
+}else
+{
+	if(!optionExist){
+			console.log("no Database path set ! call diary database 'path'");
+			process.exit();
 	}
-	else
-	{
-		console.log(args[0] + " param doesn't exist");
-	}
+}
+
+
+var optionfile = fs.readFileSync(configPath);
+var option = JSON.parse(optionfile);
+
+//console.log(option.dbpath);
+db = new Datastore({ filename: option.dbpath, autoload: true })
+
+
+
+
+
+arguments = args.slice(1);
+if(Diary[args[0]] != null)
+{
+	Diary[args[0]].apply(this,arguments);
+}
+else
+{
+	console.log(args[0] + " param doesn't exist");
+}
