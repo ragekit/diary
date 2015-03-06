@@ -7,7 +7,13 @@ npm install git+https://git@github.com/ragekit/diary.git
 
 ###To use
 
-Change the db var to your db path then
+Do once :
+
+```
+diary database "path/to/db"
+
+```
+then use with the following commands
 
 ```
 diary add projectname
