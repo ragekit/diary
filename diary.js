@@ -76,7 +76,7 @@ Diary.end = function(projectName)
 		} }, function (err, docs) {
 		  for (var i = 0; i < docs.length; i++) {
 		  	docs[i]._started = false;
-		  	docs[i].logs[docs[i].logs.length-1].end = moment();
+		  	docs[i].logs[docs[i].logs.length-1].end = moment().toISOString();
 
 		  	db.update({_id: docs[i]._id},docs[i]);
 		  };
@@ -95,7 +95,7 @@ Diary.end = function(projectName)
 		{
 			if(found._started)
 			{
-				found.logs[found.logs.length-1].end = moment();
+				found.logs[found.logs.length-1].end = moment().toISOString();
 				found._started = false;
 				db.update({_id : found._id},found);
 			}else
@@ -176,7 +176,7 @@ var optionfile = fs.readFileSync(configPath);
 var option = JSON.parse(optionfile);
 
 //console.log(option.dbpath);
-db = new Datastore({ filename: option.dbpath, autoload: true })
+db = new Datastore({ filename: option.dbpath, autoload: true})
 
 
 
