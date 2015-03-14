@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 var fs = require('fs');
-var Datastore = require('nedb');
 var moment = require('moment');
+var low = require('lowdb');
 var path = require('path')
 
 
@@ -13,81 +13,69 @@ var projectSchema = function(){
 }
 var Diary = {};
 
-Diary.add = function(projectName,cb)
+Diary.add = function(projectName)
 {
+	var found = db('projects').find({name:projectName});
+	if(found == undefined)
+	{
+		var p = new projectSchema();
+		p.name = projectName;
 
-	db.find({name:projectName},function(err,found){
-		if(found.length ==0)
-		{
-			var p = new projectSchema();
-			p.name = projectName
-			db.insert(p,function(err)
-			{
-				if(err) return console.error(err);
-				else{
-					console.log(projectName + " added");
-				}
-			})
-		}else
-		{
-			console.error(projectName + " allready exist");
-		}
-
-	})
+		db("projects").push(p);
+		console.log("added");
+	}else
+	{
+		console.error(projectName + " allready exist");
+	}
 }
 
 Diary.start = function(projectName)
 {
-	db.findOne({name:projectName},function(err,found){
-		if(found == null)
+	var found = db('projects').find({name:projectName});
+	if(found == null)
+	{
+		console.log("no project named " + projectName + " found");
+		return
+	}else
+	{
+		if(!found._started)
 		{
-			console.log("no project named" + projectName + " found");
-			return
+			found.logs.push({start : moment(),end:null})
+			found._started = true;
+			db.save();
 		}else
 		{
-			if(!found._started)
-			{
-				db.update({_id : found._id},{
-					$addToSet:{
-						logs:{start: moment(),end:null}
-					},
-					$set:{
-						_started:true
-					}
-				})
-			}else
-			{
-				console.log("project allready started !");
-			}	
-		}
-	})
+			console.log("project allready started !");
+		}	
+	}
 }
 
 Diary.end = function(projectName)
 {
 	if(projectName == undefined)
 	{
-		db.find({ $where: function () { 
-			for (var i = 0; i < this.logs.length; i++) {
-				var item = this.logs[i];
+		var docs = db('projects').filter(function (project) {
+			for (var i = 0; i < project.logs.length; i++) {
+				var item = project.logs[i];
 				if(item.end == null) return true
-			};
+			}
 			return false;
-		} }, function (err, docs) {
-		  for (var i = 0; i < docs.length; i++) {
-		  	docs[i]._started = false;
-		  	docs[i].logs[docs[i].logs.length-1].end = moment().toISOString();
-
-		  	db.update({_id: docs[i]._id},docs[i]);
-		  };
 		});
 
+		console.log(docs);
+		 for (var i = 0; i < docs.length; i++) {
+		  	docs[i]._started = false;
+		  	console.log("saving");
+		  	docs[i].logs[docs[i].logs.length-1].end = moment().toISOString();
+		  }
+		db.save();
 		console.log("all project ended");
 		return;
 	}
 
-	db.findOne({name:projectName},function(err,found){
-		if(found == null)
+	var found = db('projects').first({name:projectName});
+
+		if(found == undefined)
 		{
 			console.log("no project named" + projectName + " found");
 			return
@@ -97,20 +85,20 @@ Diary.end = function(projectName)
 			{
 				found.logs[found.logs.length-1].end = moment().toISOString();
 				found._started = false;
-				db.update({_id : found._id},found);
+				db.save();
 			}else
 			{
 				console.log("project not started !");
 			}
 		}
-	})
 }
 
 Diary.list = function(){
 
 	var startTime = moment.max();
 	var totalworkingtime = 0;
-	db.find({},function(err,found){
+	var found = db.object.projects;
+
 		for (var i = 0; i < found.length; i++) {
 			console.log("\n"+found[i].name);
 			console.log("  │");
@@ -141,21 +129,20 @@ Diary.list = function(){
 		console.log(" Since : "+  startTime.format("D MMMM YYYY, H:mm:ss"));
 
 		var dayWorked = moment.duration(moment().diff(startTime)).days();
-
+		
 		console.log(" Average : " + moment.duration(totalworkingtime/dayWorked).humanize() + " by day (including non working days)");
-	})
 }
 
 Diary.setDatabase = function(p){
 	fs.writeFileSync(configPath, JSON.stringify({dbpath:path.resolve(p)}));
 }
 
-
+var args = process.argv.slice(2);
 //process.exit();
 
 var configPath = path.resolve(path.dirname(process.argv[1]) + "/config.json");
 console.log(configPath);
-var args = process.argv.slice(2);
+
 
 var optionExist = fs.existsSync(configPath);
 
@@ -176,7 +163,8 @@ var optionfile = fs.readFileSync(configPath);
 var option = JSON.parse(optionfile);
 
 //console.log(option.dbpath);
-db = new Datastore({ filename: option.dbpath, autoload: true})
+
+db = low(option.dbpath);
 
 
 

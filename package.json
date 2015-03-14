@@ -2,13 +2,17 @@
   "name": "diary",
   "version": "1.0.0",
   "description": "diary utilities",
-  "main": "diary",
+  "main": "index.html",
   "dependencies": {
+    "d3": "^3.5.5",
+    "lowdb": "^0.7.2",
     "moment": "^2.9.0",
     "nedb": "^1.1.1",
     "yamljs": "^0.2.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "node-webkit-builder": "^1.0.11"
+  },
   "author": "ragekit",
   "license": "ISC",
   "repository": {
@@ -18,5 +22,9 @@
   "preferGlobal": "true",
   "bin": {
     "diary": "./diary.js"
+  },
+  "window": {
+    "frame": true,
+    "toolbar": false
   }
 }
