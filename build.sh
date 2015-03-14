@@ -1,0 +1,1 @@
+./node_modules/node-webkit-builder/bin/nwbuild -r ./

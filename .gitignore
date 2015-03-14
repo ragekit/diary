@@ -3,3 +3,6 @@ db/
 db
 config.json
 db - Copie
+*.sublime-project
+*.sublime-workspace
+db.json

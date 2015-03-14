@@ -1,0 +1,15 @@
+<html>
+<head>
+<title>Hello World!</title>
+</head>
+<body>
+<script src="./node_modules/d3/d3.min.js"></script>
+<script>
+	require('nw.gui').Window.get().showDevTools()
+	global.document = document;
+	global.d3 = d3;
+	var App = require("./app/index.js")
+    App.start();
+</script>
+</body>
+</html>
