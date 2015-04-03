@@ -40,7 +40,7 @@ Diary.start = function(projectName)
 	{
 		if(!found._started)
 		{
-			found.logs.push({start : moment(),end:null})
+			found.logs.push({start : moment().format(),end:null})
 			found._started = true;
 			db.save();
 		}else
@@ -50,7 +50,7 @@ Diary.start = function(projectName)
 	}
 }
 
-Diary.end = function(projectName)
+Diary.stop = function(projectName)
 {
 	if(projectName == undefined)
 	{
@@ -66,7 +66,7 @@ Diary.end = function(projectName)
 		 for (var i = 0; i < docs.length; i++) {
 		  	docs[i]._started = false;
 		  	console.log("saving");
-		  	docs[i].logs[docs[i].logs.length-1].end = moment().toISOString();
+		  	docs[i].logs[docs[i].logs.length-1].end = moment().format();
 		  }
 		db.save();
 		console.log("all project ended");
@@ -83,7 +83,7 @@ Diary.end = function(projectName)
 		{
 			if(found._started)
 			{
-				found.logs[found.logs.length-1].end = moment().toISOString();
+				found.logs[found.logs.length-1].end = moment().format();
 				found._started = false;
 				db.save();
 			}else
@@ -138,14 +138,9 @@ Diary.setDatabase = function(p){
 }
 
 var args = process.argv.slice(2);
-//process.exit();
-
 var configPath = path.resolve(path.dirname(process.argv[1]) + "/config.json");
 console.log(configPath);
-
-
 var optionExist = fs.existsSync(configPath);
-
 if(args[0] == "database")
 {
 	Diary.setDatabase(args[1]);
@@ -157,19 +152,9 @@ if(args[0] == "database")
 			process.exit();
 	}
 }
-
-
 var optionfile = fs.readFileSync(configPath);
 var option = JSON.parse(optionfile);
-
-//console.log(option.dbpath);
-
 db = low(option.dbpath);
-
-
-
-
-
 arguments = args.slice(1);
 if(Diary[args[0]] != null)
 {

@@ -6,3 +6,4 @@ db - Copie
 *.sublime-project
 *.sublime-workspace
 db.json
+cache/
